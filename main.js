@@ -10,6 +10,10 @@ const client = mqtt.connect({
     protocol: process.env.MQTT_PROTOCOL,
     username: process.env.MQTT_USERNAME,
     password: process.env.MQTT_PASSWORD,
+    protocolId: 'MQIsdp',
+    protocolVersion: 3,
+    clean: false,
+    clientId: 'mqtt-node-subscriber'
 });
 
 let last_reading = null;
@@ -26,7 +30,12 @@ client.on('error', err => {
 client.on('message', (topic, message) => {
     console.log(`Mensagem recebida: ${message.toString()}`);
 
-    last_reading = message.toString();
+    last_reading = JSON.parse(message.toString());
+
+    last_reading.temperatura = last_reading.temperatura.toFixed(2);
+    last_reading.umidade = last_reading.umidade.toFixed(2);
+
+    last_reading = JSON.stringify(last_reading);
 });
 
 client.subscribe('mqtt/leituras', {
